@@ -1,3 +1,3 @@
 - Use Google Chrome Desktop
-- Pages available are / and /scroll
+- Pages available are / and /scroll and /nopackage
 - Uses liquid-glass-react

@@ -25,11 +25,11 @@ export default function ARPage() {
 	const videoRef = useRef(null)
 	const [allowed, setAllowed] = useState(false)
 
+	const ua = typeof navigator !== 'undefined' ? navigator.userAgent : ''
+	const isDesktop = !/Mobi|Android|iPhone|iPad|iPod|Mobile|Tablet|Touch/.test(ua)
+	const isChrome = /Chrome\//.test(ua) && !/Edge\//.test(ua) && !/OPR\//.test(ua) && !/Edg\//.test(ua)
+
 	useEffect(() => {
-		const ua = navigator.userAgent
-		const isDesktop = !/Mobi|Android|iPhone|iPad|iPod|Mobile|Tablet|Touch/.test(ua)
-		const isChrome = /Chrome\//.test(ua) && !/Edge\//.test(ua) && !/OPR\//.test(ua) && !/Edg\//.test(ua)
-    console.log('isDesktop:', isDesktop, 'isChrome:', isChrome)
 		setAllowed(isDesktop && isChrome)
 	}, [])
 
@@ -109,6 +109,13 @@ export default function ARPage() {
 					<h1 className="text-2xl font-bold mb-4">Unsupported Device or Browser</h1>
 					<p className="text-lg">You gotta use <span className="font-semibold">Desktop Chrome</span> for this.</p>
           <p className="text-xs mt-5">Why? Because the underlying package relies on WebGL2 shaders, pointer hover, and framebuffer sampling - all of which are throttled, missing, or buggy on Safari, Firefox, and mobile.</p>
+          {isChrome && (
+            <p className="mt-3">
+              <a href="/nopackage" className="text-blue-600 underline hover:text-blue-800 text-xs">
+                try this glass instead
+              </a>
+            </p>
+          )}
 				</div>
 			</div>
 		)
