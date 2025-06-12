@@ -159,7 +159,7 @@ export default function ARPage() {
 						style={{ userSelect: 'none' }}
 					>
 						<div className="space-y-3 text-white text-sm font-bold drop-shadow-lg opacity-20 mb-1 sticky bottom-0">
-							this is glass
+							{`this is glass ${level === glassLevels.length - 1 ? 0 : level + 1}`}
 						</div>
 						{/* settings button */}
 						<button
