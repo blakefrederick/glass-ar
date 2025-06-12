@@ -68,6 +68,8 @@ export default function ARPage() {
 	const [dragging, setDragging] = useState(false)
 	const [dragStart, setDragStart] = useState({ x: 0, y: 0 })
 	const [offset, setOffset] = useState({ x: 0, y: 0 })
+	const [expanded, setExpanded] = useState(false)
+	const glassScale = expanded ? 2 : 1
 
 	const handleDragStart = (e) => {
 		e.preventDefault()
@@ -135,6 +137,7 @@ export default function ARPage() {
 				/>
 				{/* LiquidGlass overlay */}
 				<LiquidGlass
+					key={expanded ? 'expanded' : 'collapsed'}
 					displacementScale={glassLevels[level].displacementScale}
 					blurAmount={glassLevels[level].blurAmount}
 					saturation={glassLevels[level].saturation}
@@ -153,10 +156,10 @@ export default function ARPage() {
 					}}
 				>
 					<div
-						className="w-[calc(50vw-26.666vw)] h-[calc(50vh-16.666vh)] flex items-end justify-center relative min-w-[220px] select-none"
+						className={`${expanded ? 'w-[calc(80vw-26.666vw)]' : 'w-[calc(50vw-26.666vw)]'} ${expanded ? 'h-[calc(80vh-16.666vh)]' : 'h-[calc(50vh-16.666vh)]'} flex items-end justify-center relative min-w-[220px] select-none`}
 						onMouseDown={handleDragStart}
 						onTouchStart={handleDragStart}
-						style={{ userSelect: 'none' }}
+						style={{ userSelect: 'none', transition: 'width 0.2s' }}
 					>
 						<div className="space-y-3 text-white text-sm font-bold drop-shadow-lg opacity-20 mb-1 sticky bottom-0">
 							{`this is glass ${level === glassLevels.length - 1 ? 0 : level + 1}`}
@@ -173,6 +176,43 @@ export default function ARPage() {
 								<path d="M7 10a3 3 0 1 0 6 0 3 3 0 1 0-6 0" stroke="currentColor" strokeWidth="1.2" fill="none" />
 							</svg>
 						</button>
+						{/* expand/collapse button */}
+						{!expanded && (
+							<button
+								onClick={() => setExpanded(true)}
+								aria-label="Expand glass"
+								className="absolute top-0 right-0 z-30 p-1 rounded-full bg-white/10 hover:bg-white/20 transition-colors shadow-md border border-white/10"
+								style={{
+									transform: 'translate(50%,-50%) rotate(45deg)',
+									backdropFilter: 'blur(2px)',
+									WebkitBackdropFilter: 'blur(2px)',
+									scale: '0.75',
+									pointerEvents: 'auto',
+								}}
+							>
+								<svg width="20" height="20" viewBox="0 0 20 20" fill="none" className="text-white opacity-60 hover:opacity-90 transition-opacity" xmlns="http://www.w3.org/2000/svg">
+									<polyline points="6,14 10,10 14,6" stroke="currentColor" strokeWidth="2" fill="none" />
+								</svg>
+							</button>
+						)}
+						{expanded && (
+							<button
+								onClick={() => setExpanded(false)}
+								aria-label="Collapse glass"
+								className="absolute top-0 right-0 z-30 p-1 rounded-full bg-white/10 hover:bg-white/20 transition-colors shadow-md border border-white/10"
+								style={{
+									transform: 'translate(50%,-50%) rotate(-135deg)',
+									backdropFilter: 'blur(2px)',
+									WebkitBackdropFilter: 'blur(2px)',
+									scale: '0.75',
+									pointerEvents: 'auto',
+								}}
+							>
+								<svg width="20" height="20" viewBox="0 0 20 20" fill="none" className="text-white opacity-60 hover:opacity-90 transition-opacity" xmlns="http://www.w3.org/2000/svg">
+									<polyline points="14,6 10,10 6,14" stroke="currentColor" strokeWidth="2" fill="none" />
+								</svg>
+							</button>
+						)}
 					</div>
 				</LiquidGlass>
 			</div>
