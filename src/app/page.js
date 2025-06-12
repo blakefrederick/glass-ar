@@ -1,103 +1,88 @@
-import Image from "next/image";
+'use client'
+
+import { useState, useRef } from 'react'
+import LiquidGlass from 'liquid-glass-react'
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              src/app/page.js
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+	const displacementScale = 100
+	const blurAmount = 0.3
+	const saturation = 220
+	const aberrationIntensity = 5
+	const elasticity = 0
+	const cornerRadius = 32
+	const userInfoOverLight = false
+	const userInfoMode = 'standard'
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
-  );
+	const containerRef = useRef(null)
+
+	const backgroundImageFiles = [
+		'20-1400x1300.jpg',
+		'238-1100x1200.jpg',
+		'353-2000x2000.jpg',
+		'367-1200x1200.jpg',
+		'452-1100x1200.jpg',
+		'457-2000x2000.jpg',
+		'537-1200x1200.jpg',
+		'55-1100x1200.jpg',
+		'576-1200x1200.jpg',
+		'608-1200x1200.jpg',
+		'62-2000x2000.jpg',
+		'659-2000x2000.jpg',
+		'737-1100x1200.jpg',
+		'776-2000x2000.jpg',
+		'831-1400x1300.jpg',
+		'842-1200x1200.jpg',
+		'918-1400x1300.jpg'
+	]
+	const backgroundImages = backgroundImageFiles.map((f) => `/backgrounds/${f}`)
+
+	// Shuffle up and deal
+	function shuffle(array) {
+		let currentIndex = array.length,
+			randomIndex
+		while (currentIndex !== 0) {
+			randomIndex = Math.floor(Math.random() * currentIndex)
+			currentIndex--
+			;[array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]]
+		}
+		return array
+	}
+	const shuffledImages = shuffle([...backgroundImages])
+
+	return (
+		<div className="w-full max-w-5xl mx-auto my-10 min-h-screen max-h-none rounded-3xl overflow-auto">
+			<div className="flex-1 relative min-h-screen" ref={containerRef}>
+				<div className="w-full pb-96 mb-96 flex flex-col">
+					{shuffledImages.map((src, i) => (
+						<img
+							key={src}
+							src={src}
+							className="w-full h-96 object-cover my-10"
+							alt={`Background ${i + 1}`}
+						/>
+					))}
+				</div>
+				<LiquidGlass
+					displacementScale={displacementScale}
+					blurAmount={blurAmount}
+					saturation={saturation}
+					aberrationIntensity={aberrationIntensity}
+					elasticity={elasticity}
+					cornerRadius={cornerRadius}
+					mouseContainer={containerRef}
+					overLight={userInfoOverLight}
+					mode={userInfoMode}
+					style={{
+						position: 'fixed',
+						top: '45%',
+						left: '50%'
+					}}
+				>
+					<div className="w-[calc(100vw-26.666vw)] h-[calc(90vh-16.666vh)] text-shadow-lg">
+						<div className="space-y-3"></div>
+					</div>
+				</LiquidGlass>
+			</div>
+		</div>
+	)
 }
