@@ -54,6 +54,17 @@ export default function Home() {
 		setShuffledImages(shuffle([...backgroundImages]))
 	}, [])
 
+	const glassLevels = [
+		{ blurAmount: 0.1, displacementScale: 100, saturation: 140 },
+		{ blurAmount: 0.2, displacementScale: 200, saturation: 180 },
+		{ blurAmount: 0.3, displacementScale: 300, saturation: 220 },
+		{ blurAmount: 0.4, displacementScale: 400, saturation: 260 },
+		{ blurAmount: 0.5, displacementScale: 500, saturation: 300 },
+        { blurAmount: 0.0, displacementScale: 0, saturation: 100 },
+	]
+	const [level, setLevel] = useState(0)
+	const handleCycle = () => setLevel((prev) => (prev + 1) % glassLevels.length)
+
 	if (shuffledImages.length === 0) {
 		return null // or a loading spinner
 	}
@@ -61,6 +72,7 @@ export default function Home() {
 	return (
 		<div className="w-full max-w-5xl mx-auto my-10 min-h-screen max-h-none rounded-3xl overflow-auto">
 			<div className="flex-1 relative min-h-screen" ref={containerRef}>
+				<div onClick={handleCycle} className="absolute inset-0 z-10 cursor-pointerApp" style={{ borderRadius: 32 }} />
 				<div className="w-full pb-96 mb-96 flex flex-col">
 					{shuffledImages.map((src, i) => (
 						<img
@@ -72,9 +84,9 @@ export default function Home() {
 					))}
 				</div>
 				<LiquidGlass
-					displacementScale={displacementScale}
-					blurAmount={blurAmount}
-					saturation={saturation}
+					displacementScale={glassLevels[level].displacementScale}
+					blurAmount={glassLevels[level].blurAmount}
+					saturation={glassLevels[level].saturation}
 					aberrationIntensity={aberrationIntensity}
 					elasticity={elasticity}
 					cornerRadius={cornerRadius}
