@@ -1,7 +1,9 @@
 'use client'
 
-import { useState, useRef } from 'react'
-import LiquidGlass from 'liquid-glass-react'
+import { useState, useRef, useEffect } from 'react'
+import dynamic from 'next/dynamic'
+
+const LiquidGlass = dynamic(() => import('liquid-glass-react'), { ssr: false })
 
 export default function Home() {
 	const displacementScale = 100
@@ -36,18 +38,25 @@ export default function Home() {
 	]
 	const backgroundImages = backgroundImageFiles.map((f) => `/backgrounds/${f}`)
 
-	// Shuffle up and deal
-	function shuffle(array) {
-		let currentIndex = array.length,
-			randomIndex
-		while (currentIndex !== 0) {
-			randomIndex = Math.floor(Math.random() * currentIndex)
-			currentIndex--
-			;[array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]]
+	const [shuffledImages, setShuffledImages] = useState([])
+
+	useEffect(() => {
+		function shuffle(array) {
+			let currentIndex = array.length,
+				randomIndex
+			while (currentIndex !== 0) {
+				randomIndex = Math.floor(Math.random() * currentIndex)
+				currentIndex--
+				;[array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]]
+			}
+			return array
 		}
-		return array
+		setShuffledImages(shuffle([...backgroundImages]))
+	}, [])
+
+	if (shuffledImages.length === 0) {
+		return null // or a loading spinner
 	}
-	const shuffledImages = shuffle([...backgroundImages])
 
 	return (
 		<div className="w-full max-w-5xl mx-auto my-10 min-h-screen max-h-none rounded-3xl overflow-auto">
