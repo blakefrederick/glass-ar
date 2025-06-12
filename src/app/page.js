@@ -23,8 +23,18 @@ export default function ARPage() {
 
 	const containerRef = useRef(null)
 	const videoRef = useRef(null)
+	const [allowed, setAllowed] = useState(false)
 
 	useEffect(() => {
+		const ua = navigator.userAgent
+		const isDesktop = !/Mobi|Android|iPhone|iPad|iPod|Mobile|Tablet|Touch/.test(ua)
+		const isChrome = /Chrome\//.test(ua) && !/Edge\//.test(ua) && !/OPR\//.test(ua) && !/Edg\//.test(ua)
+    console.log('isDesktop:', isDesktop, 'isChrome:', isChrome)
+		setAllowed(isDesktop && isChrome)
+	}, [])
+
+	useEffect(() => {
+		if (!allowed) return // Don't ask for camera if not allowed
 		if (!videoRef.current) return
 		// Prefer environment, fallback to user, then fallback to any camera
 		const tryGetUserMedia = () => {
@@ -52,7 +62,19 @@ export default function ARPage() {
 				})
 		}
 		tryGetUserMedia()
-	}, [])
+	}, [allowed])
+
+	if (!allowed) {
+		return (
+			<div className="flex items-center justify-center min-h-screen text-center p-8">
+				<div>
+					<h1 className="text-2xl font-bold mb-4">Unsupported Device or Browser</h1>
+					<p className="text-lg">You gotta use <span className="font-semibold">Desktop Chrome</span> for this.</p>
+          <p className="text-xs mt-5">Why? Because the underlying package relies on WebGL2 shaders, pointer hover, and framebuffer sampling - all of which are throttled, missing, or buggy on Safari, Firefox, and mobile.</p>
+				</div>
+			</div>
+		)
+	}
 
 	return (
 		<div className="w-full max-w-5xl mx-auto my-10 min-h-screen max-h-none rounded-3xl overflow-auto min-w-[320px]">
