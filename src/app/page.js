@@ -64,6 +64,44 @@ export default function ARPage() {
 		tryGetUserMedia()
 	}, [allowed])
 
+	const [modalPos, setModalPos] = useState({ x: 0, y: 0 })
+	const [dragging, setDragging] = useState(false)
+	const [dragStart, setDragStart] = useState({ x: 0, y: 0 })
+	const [offset, setOffset] = useState({ x: 0, y: 0 })
+
+	const handleDragStart = (e) => {
+		e.preventDefault()
+		setDragging(true)
+		const clientX = e.type === 'touchstart' ? e.touches[0].clientX : e.clientX
+		const clientY = e.type === 'touchstart' ? e.touches[0].clientY : e.clientY
+		setDragStart({ x: clientX, y: clientY })
+		setOffset({ x: modalPos.x, y: modalPos.y })
+	}
+	const handleDrag = (e) => {
+		if (!dragging) return
+		const clientX = e.type === 'touchmove' ? e.touches[0].clientX : e.clientX
+		const clientY = e.type === 'touchmove' ? e.touches[0].clientY : e.clientY
+		setModalPos({
+			x: offset.x + (clientX - dragStart.x),
+			y: offset.y + (clientY - dragStart.y),
+		})
+	}
+	const handleDragEnd = () => setDragging(false)
+
+	useEffect(() => {
+		if (!dragging) return
+		window.addEventListener('mousemove', handleDrag)
+		window.addEventListener('mouseup', handleDragEnd)
+		window.addEventListener('touchmove', handleDrag)
+		window.addEventListener('touchend', handleDragEnd)
+		return () => {
+			window.removeEventListener('mousemove', handleDrag)
+			window.removeEventListener('mouseup', handleDragEnd)
+			window.removeEventListener('touchmove', handleDrag)
+			window.removeEventListener('touchend', handleDragEnd)
+		}
+	}, [dragging, dragStart, offset])
+
 	if (!allowed) {
 		return (
 			<div className="flex items-center justify-center min-h-screen text-center p-8">
@@ -101,11 +139,18 @@ export default function ARPage() {
 					mode={userInfoMode}
 					style={{
 						position: 'fixed',
-						top: '45%',
-						left: '50%',
+						top: `calc(45% + ${modalPos.y}px)`,
+						left: `calc(50% + ${modalPos.x}px)`,
+						cursor: dragging ? 'grabbing' : 'grab',
+						zIndex: 10,
 					}}
 				>
-					<div className="w-[calc(50vw-26.666vw)] h-[calc(50vh-16.666vh)] flex items-end justify-center relative min-w-[220px]">
+					<div
+						className="w-[calc(50vw-26.666vw)] h-[calc(50vh-16.666vh)] flex items-end justify-center relative min-w-[220px] select-none"
+						onMouseDown={handleDragStart}
+						onTouchStart={handleDragStart}
+						style={{ userSelect: 'none' }}
+					>
 						<div className="space-y-3 text-white text-sm font-bold drop-shadow-lg opacity-20 mb-1 sticky bottom-0">
 							this is glass
 						</div>
@@ -114,7 +159,7 @@ export default function ARPage() {
 							onClick={handleCycle}
 							aria-label="Change glass intensity"
 							className="absolute bottom-0 right-0 z-20 p-1 rounded-full bg-white/10 hover:bg-white/20 transition-colors shadow-md border border-white/10"
-							style={{ backdropFilter: 'blur(2px)', WebkitBackdropFilter: 'blur(2px)', scale: '0.6' }}
+							style={{ backdropFilter: 'blur(2px)', WebkitBackdropFilter: 'blur(2px)', scale: '0.75' }}
 						>
 							<svg width="20" height="20" viewBox="0 0 20 20" fill="none" className="text-white opacity-60 hover:opacity-90 transition-opacity" xmlns="http://www.w3.org/2000/svg">
 								<circle cx="10" cy="10" r="8" stroke="currentColor" strokeWidth="1.5" fill="none" />
