@@ -21,7 +21,7 @@ export default function ARPage() {
 	useEffect(() => {
 		if (!videoRef.current) return
 		navigator.mediaDevices
-			.getUserMedia({ video: true })
+			.getUserMedia({ video: { facingMode: { exact: 'environment' } } })
 			.then((stream) => {
 				videoRef.current.srcObject = stream
 			})
