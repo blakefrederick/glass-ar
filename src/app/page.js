@@ -24,13 +24,16 @@ export default function ARPage() {
 	const containerRef = useRef(null)
 	const videoRef = useRef(null)
 	const [allowed, setAllowed] = useState(false)
-
-	const ua = typeof navigator !== 'undefined' ? navigator.userAgent : ''
-	const isDesktop = !/Mobi|Android|iPhone|iPad|iPod|Mobile|Tablet|Touch/.test(ua)
-	const isChrome = /Chrome\//.test(ua) && !/Edge\//.test(ua) && !/OPR\//.test(ua) && !/Edg\//.test(ua)
+	const [isChrome, setIsChrome] = useState(false)
 
 	useEffect(() => {
-		setAllowed(isDesktop && isChrome)
+		if (typeof window !== 'undefined') {
+			const ua = navigator.userAgent
+			const isDesktop = !/Mobi|Android|iPhone|iPad|iPod|Mobile|Tablet|Touch/.test(ua)
+			const chrome = /Chrome\//.test(ua) && !/Edge\//.test(ua) && !/OPR\//.test(ua) && !/Edg\//.test(ua)
+			setAllowed(isDesktop && chrome)
+			setIsChrome(chrome)
+		}
 	}, [])
 
 	useEffect(() => {
@@ -65,15 +68,71 @@ export default function ARPage() {
 	}, [allowed])
 
 	const [modalPos, setModalPos] = useState({ x: 0, y: 0 })
+	const [velocity, setVelocity] = useState({ x: 2, y: 2 }) // px per frame
+	const [animating, setAnimating] = useState(true)
 	const [dragging, setDragging] = useState(false)
 	const [dragStart, setDragStart] = useState({ x: 0, y: 0 })
 	const [offset, setOffset] = useState({ x: 0, y: 0 })
 	const [expanded, setExpanded] = useState(false)
 	const glassScale = expanded ? 2 : 1
 
+	// DVD animation
+	useEffect(() => {
+		if (!animating || dragging) return
+		let rafId
+		const animate = () => {
+			setModalPos(pos => {
+				const container = containerRef.current
+				if (!container) return pos
+				const containerRect = container.getBoundingClientRect()
+				const glassW = expanded ? (window.innerWidth * 0.8 - window.innerWidth * 0.26666) : (window.innerWidth * 0.5 - window.innerWidth * 0.26666)
+				const glassH = expanded ? (window.innerHeight * 0.8 - window.innerHeight * 0.16666) : (window.innerHeight * 0.5 - window.innerHeight * 0.16666)
+				let { x, y } = pos
+				let { x: vx, y: vy } = velocity
+				// Calculate bounds
+				const minX = -window.innerWidth/2 + glassW/2
+				const maxX = window.innerWidth/2 - glassW/2
+				const minY = -window.innerHeight/2 + glassH/2
+				const maxY = window.innerHeight/2 - glassH/2
+				let hitCorner = false
+				// Bounce logic (less bounce: just invert, don't add energy)
+				if (x + vx < minX || x + vx > maxX) {
+					vx = -Math.abs(vx) * Math.sign(vx)
+				}
+				if (y + vy < minY || y + vy > maxY) {
+					vy = -Math.abs(vy) * Math.sign(vy)
+				}
+				// Move
+				x += vx
+				y += vy
+				// Snap to bounds
+				if (x < minX) x = minX
+				if (x > maxX) x = maxX
+				if (y < minY) y = minY
+				if (y > maxY) y = maxY
+				// Check for exact corner
+				if ((x === minX || x === maxX) && (y === minY || y === maxY)) {
+					hitCorner = true
+				}
+				setVelocity({ x: vx, y: vy })
+				// If hit corner, pause for a moment
+				if (hitCorner) {
+					setAnimating(false)
+					setTimeout(() => setAnimating(true), 600)
+				}
+				return { x, y }
+			})
+			rafId = requestAnimationFrame(animate)
+		}
+		rafId = requestAnimationFrame(animate)
+		return () => cancelAnimationFrame(rafId)
+	}, [animating, dragging, expanded, velocity])
+
+	// Stop animation on drag
 	const handleDragStart = (e) => {
 		e.preventDefault()
 		setDragging(true)
+		setAnimating(false)
 		const clientX = e.type === 'touchstart' ? e.touches[0].clientX : e.clientX
 		const clientY = e.type === 'touchstart' ? e.touches[0].clientY : e.clientY
 		setDragStart({ x: clientX, y: clientY })
@@ -88,8 +147,12 @@ export default function ARPage() {
 			y: offset.y + (clientY - dragStart.y),
 		})
 	}
-	const handleDragEnd = () => setDragging(false)
+	const handleDragEnd = () => {
+		setDragging(false)
+		// Do not restart animation after drag
+	}
 
+	// Ensure drag listeners are always active after animation stops
 	useEffect(() => {
 		if (!dragging) return
 		window.addEventListener('mousemove', handleDrag)
