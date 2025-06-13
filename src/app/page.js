@@ -25,6 +25,7 @@ export default function ARPage() {
 	const videoRef = useRef(null)
 	const [allowed, setAllowed] = useState(false)
 	const [isChrome, setIsChrome] = useState(false)
+	const [checkedSupport, setCheckedSupport] = useState(false)
 
 	useEffect(() => {
 		if (typeof window !== 'undefined') {
@@ -33,6 +34,7 @@ export default function ARPage() {
 			const chrome = /Chrome\//.test(ua) && !/Edge\//.test(ua) && !/OPR\//.test(ua) && !/Edg\//.test(ua)
 			setAllowed(isDesktop && chrome)
 			setIsChrome(chrome)
+			setCheckedSupport(true)
 		}
 	}, [])
 
@@ -89,10 +91,10 @@ export default function ARPage() {
 				let { x: vx, y: vy } = velocity
 
 				// Calculate bounds relative to window
-				const minX = -window.innerWidth / 2 + glassW / 2 + 20
-				const maxX = window.innerWidth / 2 - glassW / 2 - 20
-				const minY = -window.innerHeight / 2 + glassH / 2 + 10
-				const maxY = window.innerHeight / 2 - glassH / 2 - 10
+				const minX = -window.innerWidth / 2 + glassW / 2 + 10
+				const maxX = window.innerWidth / 2 - glassW / 2 - 10
+				const minY = -window.innerHeight / 2 + glassH / 2 + 5
+				const maxY = window.innerHeight / 2 - glassH / 2 - 5
 
 				let hitCorner = false
 				// Bounce logic (less bounce: just invert, don't add energy)
@@ -178,6 +180,10 @@ export default function ARPage() {
 		}
 	}, [dragTimeout])
 
+	if (!checkedSupport) {
+		return null
+	}
+
 	if (!allowed) {
 		return (
 			<div className="flex items-center justify-center min-h-screen text-center p-8">
@@ -198,7 +204,7 @@ export default function ARPage() {
 	}
 
 	return (
-		<div className="w-full max-w-5xl mx-auto min-h-screen max-h-none rounded-3xl overflow-hidden min-w-[320px] flex flex-col" style={{height:'100vh'}}>
+		<div className="w-full max-w-5xl mx-auto min-h-screen max-h-none rounded-l overflow-hidden min-w-[320px] flex flex-col" style={{height:'100vh'}}>
 			<div className="flex-1 relative min-h-screen h-full" ref={containerRef} style={{height:'100vh'}}>
 				{/* Video background */}
 				<video
@@ -206,7 +212,7 @@ export default function ARPage() {
 					autoPlay
 					muted
 					playsInline
-					className="absolute top-0 left-0 w-full h-full object-cover z-0 rounded-3xl"
+					className="absolute top-0 left-0 w-full h-full object-cover z-0 rounded-l"
 					style={{ pointerEvents: 'none', height: '100vh', width: '100vw', minHeight: 0, minWidth: 0 }}
 				/>
 				{/* LiquidGlass overlay */}
