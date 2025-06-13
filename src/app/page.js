@@ -295,6 +295,29 @@ export default function ARPage() {
 						)}
 					</div>
 				</LiquidGlass>
+				{/* bottom right scroll link */}
+				<a
+					href="/scroll"
+					style={{
+						position: 'fixed',
+						right: 8,
+						bottom: 6,
+						fontSize: '10px',
+						color: 'white',
+						opacity: 0.6,
+						textDecoration: 'none',
+						zIndex: 50,
+						cursor: 'pointer',
+						letterSpacing: '0.05em',
+						fontWeight: 500,
+						userSelect: 'none',
+						transition: 'opacity 0.15s',
+					}}
+					onMouseOver={e => (e.currentTarget.style.opacity = 0.9)}
+					onMouseOut={e => (e.currentTarget.style.opacity = 0.6)}
+				>
+					scroll
+				</a>
 			</div>
 		</div>
 	)
