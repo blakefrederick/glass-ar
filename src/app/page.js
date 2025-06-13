@@ -75,6 +75,7 @@ export default function ARPage() {
 	const [offset, setOffset] = useState({ x: 0, y: 0 })
 	const [expanded, setExpanded] = useState(false)
 	const glassScale = expanded ? 2 : 1
+	const [dragTimeout, setDragTimeout] = useState(null)
 
 	// DVD animation
 	useEffect(() => {
@@ -82,18 +83,17 @@ export default function ARPage() {
 		let rafId
 		const animate = () => {
 			setModalPos(pos => {
-				const container = containerRef.current
-				if (!container) return pos
-				const containerRect = container.getBoundingClientRect()
 				const glassW = expanded ? (window.innerWidth * 0.8 - window.innerWidth * 0.26666) : (window.innerWidth * 0.5 - window.innerWidth * 0.26666)
 				const glassH = expanded ? (window.innerHeight * 0.8 - window.innerHeight * 0.16666) : (window.innerHeight * 0.5 - window.innerHeight * 0.16666)
 				let { x, y } = pos
 				let { x: vx, y: vy } = velocity
-				// Calculate bounds
-				const minX = -window.innerWidth/2 + glassW/2
-				const maxX = window.innerWidth/2 - glassW/2
-				const minY = -window.innerHeight/2 + glassH/2
-				const maxY = window.innerHeight/2 - glassH/2
+
+				// Calculate bounds relative to window
+				const minX = -window.innerWidth / 2 + glassW / 2 + 20
+				const maxX = window.innerWidth / 2 - glassW / 2 - 20
+				const minY = -window.innerHeight / 2 + glassH / 2 + 10
+				const maxY = window.innerHeight / 2 - glassH / 2 - 10
+
 				let hitCorner = false
 				// Bounce logic (less bounce: just invert, don't add energy)
 				if (x + vx < minX || x + vx > maxX) {
@@ -149,7 +149,12 @@ export default function ARPage() {
 	}
 	const handleDragEnd = () => {
 		setDragging(false)
-		// Do not restart animation after drag
+		// Restart animation after 7 seconds if not already animating
+		if (dragTimeout) clearTimeout(dragTimeout)
+		const timeout = setTimeout(() => {
+			setAnimating(true)
+		}, 7000)
+		setDragTimeout(timeout)
 	}
 
 	// Ensure drag listeners are always active after animation stops
@@ -166,6 +171,12 @@ export default function ARPage() {
 			window.removeEventListener('touchend', handleDragEnd)
 		}
 	}, [dragging, dragStart, offset])
+
+	useEffect(() => {
+		return () => {
+			if (dragTimeout) clearTimeout(dragTimeout)
+		}
+	}, [dragTimeout])
 
 	if (!allowed) {
 		return (
@@ -187,8 +198,8 @@ export default function ARPage() {
 	}
 
 	return (
-		<div className="w-full max-w-5xl mx-auto my-10 min-h-screen max-h-none rounded-3xl overflow-auto min-w-[320px]">
-			<div className="flex-1 relative min-h-screen" ref={containerRef}>
+		<div className="w-full max-w-5xl mx-auto min-h-screen max-h-none rounded-3xl overflow-hidden min-w-[320px] flex flex-col" style={{height:'100vh'}}>
+			<div className="flex-1 relative min-h-screen h-full" ref={containerRef} style={{height:'100vh'}}>
 				{/* Video background */}
 				<video
 					ref={videoRef}
@@ -196,7 +207,7 @@ export default function ARPage() {
 					muted
 					playsInline
 					className="absolute top-0 left-0 w-full h-full object-cover z-0 rounded-3xl"
-					style={{ pointerEvents: 'none' }}
+					style={{ pointerEvents: 'none', height: '100vh', width: '100vw', minHeight: 0, minWidth: 0 }}
 				/>
 				{/* LiquidGlass overlay */}
 				<LiquidGlass
@@ -212,7 +223,7 @@ export default function ARPage() {
 					mode={userInfoMode}
 					style={{
 						position: 'fixed',
-						top: `calc(45% + ${modalPos.y}px)`,
+						top: `calc(50% + ${modalPos.y}px)`,
 						left: `calc(50% + ${modalPos.x}px)`,
 						cursor: dragging ? 'grabbing' : 'grab',
 						zIndex: 10,
